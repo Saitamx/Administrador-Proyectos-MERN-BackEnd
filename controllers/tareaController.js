@@ -50,7 +50,7 @@ exports.obtenerTarea = async (req, res) => {
 
     // obtener las tareas por proyecto
     const tareas = await Tarea.find({ proyecto });
-    res.json({ tareas });
+    res.json({tareas});
   } catch (error) {
     console.log(error);
     res.status(500).send("Hubo un error");
@@ -87,7 +87,7 @@ exports.actualizarTarea = async (req, res) => {
     tarea = await Tarea.findOneAndUpdate({ _id: req.params.id }, nuevaTarea, {
       new: true,
     });
-    res.json({ tarea });
+    res.json({tarea});
   } catch (error) {
     console.log(error);
     res.status(500).send("Hubo un error");

@@ -18,7 +18,7 @@ exports.crearProyecto = async (req, res) => {
 
     // guardamos el proyecto
     proyecto.save();
-    res.json(proyecto);
+    res.json({proyecto});
   } catch (error) {
     console.log(error);
     res.status(500).send("Hubo un error");
