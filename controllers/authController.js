@@ -1,68 +1,61 @@
-const Usuario = require("../models/Usuario");
-const bcryptjs = require("bcryptjs");
-const { validationResult } = require("express-validator");
-const jwt = require("jsonwebtoken");
+const Usuario = require('../models/Usuario');
+const bcryptjs = require('bcryptjs');
+const { validationResult } = require('express-validator');
+const jwt = require('jsonwebtoken');
 
-exports.autenticarusuario = async (req, res) => {
-     // revisar si hay errores
-  const errores = validationResult(req);
-  if (!errores.isEmpty()) {
-    return res.status(400).json({ errores: errores.array() });
-  }
-
-  // extraer email y password
-  const {email, password} = req.body;
-
-  try {
-    // revisar que sea un usuario registrado
-    let usuario = await Usuario.findOne({email});
-
-    if(!usuario){
-        return res.status(400).json({ msg: "El usuario no existe" });
+exports.autenticarUsuario = async (req, res) => {
+    // revisar si hay errores
+    const errores = validationResult(req);
+    if( !errores.isEmpty() ) {
+        return res.status(400).json({errores: errores.array() })
     }
 
-    // revisar el password
-    const passCorrecto = await bcryptjs.compare(password, usuario.password);
-    if(!passCorrecto){
-        return res.status(400).json({msg: 'Password Incorrecto'})
-    }
+    // extraer el email y password
+    const { email, password } = req.body;
 
-    // si todo es correcto, crear y firmar el JWT
-    const payload = {
-        usuario: {
-            id: usuario.id
+    try {
+        // Revisar que sea un usuario registrado
+        let usuario = await Usuario.findOne({ email });
+        if(!usuario) {
+            return res.status(400).json({msg: 'El usuario no existe'});
         }
-    };
 
-    // firmar el JWT
-    jwt.sign(
-      payload,
-      process.env.SECRETA,
-      {
-        expiresIn: 3600, // 1 hora
-      },
-      (error, token) => {
-        if (error) throw error;
+        // Revisar el password
+        const passCorrecto = await bcryptjs.compare(password, usuario.password);
+        if(!passCorrecto) {
+            return res.status(400).json({msg: 'Password Incorrecto' })
+        }
 
-        // Mensaje de confirmación
-        res.json({ token });
-      }
-    );
+        // Si todo es correcto Crear y firmar el JWT
+         const payload = {
+            usuario: {
+                id: usuario.id
+            }
+        };
 
-  } catch(error){
-      console.log(error);
-  }
+        // firmar el JWT
+        jwt.sign(payload, process.env.SECRETA, {
+            expiresIn: 3600 // 1 hora
+        }, (error, token) => {
+            if(error) throw error;
 
+            // Mensaje de confirmación
+            res.json({ token  });
+        });
 
+    } catch (error) {
+        console.log(error);
+    }
 }
 
-// obtiene que usuario esta autenticado
+
+// Obtiene que usuario esta autenticado
 exports.usuarioAutenticado = async (req, res) => {
-  try {
-    const usuario = await Usuario.findById(req.usuario.id).select('-password');
-    res.json({usuario});
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({msg: 'Hubo un error'})
-  }
+    try {
+        const usuario = await Usuario.findById(req.usuario.id).select('-password');
+        res.json({usuario});
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({msg: 'Hubo un error'});
+    }
 }
